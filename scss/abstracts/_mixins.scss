@@ -1,0 +1,46 @@
+@use 'sass:meta';
+@use 'sass:math';
+@use 'sass:map';
+@use 'breakpoints' as *;
+
+
+@mixin mq($breakpoint, $max-width: min-width, $upper-breakpoint: $breakpoint + 10) {
+    @if $max-width != 'min-width' and $max-width != 'max-width' and $max-width != 'between'{
+        @error 'You have entered a value for $max-width that is different than the allow options: min-width, max-width, between';
+    }
+    @if map.has-key($breakpoints, $breakpoint) == false and meta.type-of($breakpoint) != number{
+        @error 'The value you have entered must be a number or a breakpoint key';
+    }
+    @if meta.type-of($breakpoint) == number and math.is-unitless($breakpoint){
+        @error 'The number value you have entered must contain units';
+    }
+    @if $max-width == 'between' and map.has-key($breakpoints, $upper-breakpoint) == false and meta.type-of($upper-breakpoint) != number{
+        @error 'You have indicated you want a media query between, but your upper breakpoint is not in the $breakpoints map and not a number';
+    }
+    @if $max-width == 'between' and meta.type-of($upper-breakpoint) == number and math.is-unitless($upper-breakpoint){
+        @error 'You have indicate you want a media query between, but your upper breakpoint is a number without units';
+    }
+    $bp: '';
+    $ubp: '';
+    @if map.has-key($breakpoints, $breakpoint){
+        $bp: map.get($breakpoints, $breakpoint);
+    } @else {
+        $bp: $breakpoint;
+    }
+    @if $max-width == 'between'{
+        @if map.has-key($breakpoints, $upper-breakpoint){
+            $ubp: map.get($breakpoints, $upper-breakpoint);
+        } @else {
+            $ubp: $upper-breakpoint;
+        }
+        @media (min-width: $bp) and (max-width: $ubp){
+            @content;
+        }
+    } @else{
+        @media screen and (#{$max-width}: $bp){
+            @content;
+        }
+    }
+  }
+  
+  
